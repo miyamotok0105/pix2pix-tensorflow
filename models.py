@@ -37,10 +37,10 @@ class EncoderDecoder(object):
         s2, s4, s8, s16, s32, s64, s128 = int(s/2), int(s/4), int(s/8), int(s/16), int(s/32), int(s/64), int(s/128)
 
         with tf.variable_scope("generator") as scope:
-        	# image is (256 x 256 x 3)
-        	e1 = conv2d(image, self.ngf, name='g_e1_conv')
+            # image is (256 x 256 x 3)
+            e1 = conv2d(image, self.ngf, name='g_e1_conv')
             # e1 is (128 x 128 x self.ngf)
-        	e2 = self.g_bn_e2(conv2d(lrelu(e1), self.ngf*2, name='g_e2_conv'))
+            e2 = self.g_bn_e2(conv2d(lrelu(e1), self.ngf*2, name='g_e2_conv'))
             # e2 is (64 x 64 x self.ngf*2)
             e3 = self.g_bn_e3(conv2d(lrelu(e2), self.ngf*4, name='g_e3_conv'))
             # e3 is (32 x 32 x self.ngf*4)
@@ -56,12 +56,12 @@ class EncoderDecoder(object):
             # e8 is (1 x 1 x self.ngf*8)
 
             # d1 is (2 x 2 x self.ngf*8*2)
-			self.d1, self.d1_w, self.d1_b = deconv2d(tf.nn.relu(e8),
+            self.d1, self.d1_w, self.d1_b = deconv2d(tf.nn.relu(e8),
                 [self.batch_size, s128, s128, self.ngf*8], name='g_d1', with_w=True)
             d1 = tf.nn.dropout(self.g_bn_d1(self.d1), 0.5)
             d1 = tf.concat([d1, e7], 3)
             # d2 is (4 x 4 x self.ngf*8*2)
-			self.d2, self.d2_w, self.d2_b = deconv2d(tf.nn.relu(d1),
+            self.d2, self.d2_w, self.d2_b = deconv2d(tf.nn.relu(d1),
                 [self.batch_size, s64, s64, self.ngf*8], name='g_d2', with_w=True)
             d2 = tf.nn.dropout(self.g_bn_d2(self.d2), 0.5)
             d2 = tf.concat([d2, e6], 3)

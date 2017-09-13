@@ -4,10 +4,13 @@ import os
 import numpy as np
 import tensorflow as tf
 # from models import EncoderDecoder, Discriminator
+from models import EncoderDecoder
 from data import get_training_set, get_test_set
 
 parser = argparse.ArgumentParser(description='chainer implementation of pix2pix')
 parser.add_argument('--dataset', '-i', default='facades', help='Directory of image files.')
+parser.add_argument('--batchsize', '-b', type=int, default=1, help='Number of images in each mini-batch')
+parser.add_argument('--gpu', '-g', type=int, default=-1, help='GPU ID (negative value indicates CPU)')
 args = parser.parse_args()
 
 print('===> Loading datasets')
@@ -16,9 +19,46 @@ train_set = get_training_set(root_path + args.dataset)
 test_set = get_test_set(root_path + args.dataset)
 
 for train in train_set:
-	print(train[0].shape)
-	print(train[1].shape)
-	break
+    # print(train[0].shape)
+    # print(train[1].shape)
+    # print(type(train[0]))
+    # break
+
+    print('===> Building model')
+    label = np.random.randn(args.batchsize)
+    real_label = tf.ones([1,1,30,30], tf.int32)
+    fake_label = tf.ones([1,1,30,30], tf.int32)
+
+    real_A, real_B = np.asarray(train[0], dtype=np.float32) / 255.0, np.asarray(train[1], dtype=np.float32) / 255.0
+
+    # real_data = tf.placeholder(tf.float32, shape=[1, 256, 256, 3], name='')
+    # t = tf.placeholder(tf.float32, shape=[None, 1])
+    real_A = real_A.transpose(2, 0, 1)
+    real_B = real_B.transpose(2, 0, 1)
+    real_A = real_A.reshape(1,3,256,256)
+    real_B = real_B.reshape(1,3,256,256)
+    
+    real_A = tf.Variable(real_A)
+    real_B = tf.Variable(real_B)
+    output = EncoderDecoder(tf.concat((real_A, real_B), 1))
+    print("output " ,output)
+    
+    break
+    
+    
+    
+
+
+#     label = (real_label)
+#     err_d_real = loss_dis(output, label)
+#     err_d_real.backward()
+#     fake_b = encoderdecoder_model(real_A)
+#     output = discriminator_model(F.concat((real_A, fake_b), axis=1))
+#     label = (fake_label)
+#     err_d_fake = loss_dis(output, label)
+#     err_d_fake.backward()
+#     err_d = (err_d_real + err_d_fake) / 2.0
+#     optimizer_discriminator.update()
 
 #https://github.com/yenchenlin/pix2pix-tensorflow/blob/master/model.py
 # real_data = tf.placeholder(tf.float32,
@@ -29,7 +69,6 @@ for train in train_set:
 # real_B = real_data[:, :, :, :self.input_c_dim]
 # real_A = real_data[:, :, :, self.input_c_dim:self.input_c_dim + self.output_c_dim]
 
-# self.fake_B = self.generator(self.real_A)
 
 # self.real_AB = tf.concat([self.real_A, self.real_B], 3)
 # self.fake_AB = tf.concat([self.real_A, self.fake_B], 3)
